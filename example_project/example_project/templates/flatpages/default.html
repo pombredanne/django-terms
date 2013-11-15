@@ -1,20 +1,9 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>
-      {{ flatpage.title }}
-    </title>
-    <style type="text/css">
-      a {
-        color: red;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body>
-    {{ flatpage.content|linebreaks }}
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}
+  {{ flatpage.title }}
+{% endblock %}
+
+{% block content %}
+  {{ flatpage.content|linebreaks }}
+{% endblock %}

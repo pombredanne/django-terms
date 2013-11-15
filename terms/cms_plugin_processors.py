@@ -1,22 +1,14 @@
-#!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# coding: utf-8
 
-from .html import TermsHTMLReconstructor
-from django.template import Context, Template
+from django.utils.safestring import mark_safe
+from .templatetags.terms import replace_terms
 
 
 def TermsProcessor(instance, placeholder, rendered_content, original_context):
     """
-    This processor mark all terms in all placeholders plugins except termsplugins
+    Adds links all placeholders plugins except django-terms plugins
     """
     if 'terms' in original_context:
         return rendered_content
 
-    parser = TermsHTMLReconstructor()
-    parser.feed(rendered_content)
-
-    t = Template('{{ content|safe }}')
-    c = Context({
-        'content': parser.out,
-    })
-    return t.render(c)
+    return mark_safe(replace_terms(rendered_content))

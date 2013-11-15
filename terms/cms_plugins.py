@@ -7,12 +7,11 @@ from .models import Term
 
 class TermsIndexPlugin(CMSPluginBase):
     model = CMSPlugin
-    name = _("Terms Index Plugin")
-    render_template = "term_plugin.html"
+    name = _('Glossary')
+    render_template = 'glossary_plugin.html'
 
     def render(self, context, instance, placeholder):
-        terms = Term.objects.all()
-        context['terms'] = terms
+        context['terms'] = Term.objects.all()
         return context
 
 

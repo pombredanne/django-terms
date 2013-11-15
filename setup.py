@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
+import os
 
 from setuptools import setup, find_packages
 from terms import version_string
+
+
+CURRENT_PATH = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(CURRENT_PATH, 'requirements.txt')) as f:
+    required = f.read().splitlines()
 
 
 setup(
@@ -15,19 +22,22 @@ setup(
                 'or a link for specialized terms.',
     long_description=open('README.rst').read(),
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Internet :: WWW/HTTP',
     ],
     license='BSD',
     packages=find_packages(),
-    install_requires=[
-        "Django >= 1.4",
-    ],
+    install_requires=required,
     include_package_data=True,
     zip_safe=False,
 )

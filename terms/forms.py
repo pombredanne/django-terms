@@ -1,10 +1,12 @@
 # coding: utf-8
 
-from django.forms import ModelForm, TextInput, ValidationError
-from .models import Term
-from django.utils.translation import ugettext as _
-from .settings import AVAILABLE_WIDGETS, TERMS_DEFINITION_WIDGET as WIDGET
+from __future__ import unicode_literals
 from django.conf import settings
+from django.db.models import Q
+from django.forms import ModelForm, TextInput, ValidationError
+from django.utils.translation import ugettext as _
+from .models import Term
+from .settings import AVAILABLE_WIDGETS, TERMS_DEFINITION_WIDGET as WIDGET
 
 # If WIDGET == 'auto': get the best widget one can import.
 # Otherwise: Get the specified widget.
@@ -19,14 +21,27 @@ if WIDGET == AVAILABLE_WIDGETS[3] or (WIDGET == AVAILABLE_WIDGETS[0]
 
 
 class TermForm(ModelForm):
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        data = data.strip(' |')
+        name = data.split('|')[0]
+        if Term.objects.exclude(pk=self.instance.pk).filter(
+                Q(name=name) | Q(name__startswith=name + '|')).exists():
+            raise ValidationError(
+                _('A term already exists with this main variant.'))
+        return data
+
     def clean(self):
-        definition = self.cleaned_data.get('definition')
-        url = self.cleaned_data.get('url')
-        if not definition and not url:
-            raise ValidationError(_(u'Fill either “Definition” or “Link”.'))
+        data = self.cleaned_data
+        obj = self.instance
+
+        definition = data.get('definition', obj.definition)
+        url = data.get('url', obj.url)
+        if not (definition or url):
+            raise ValidationError(_('Fill either “Definition” or “Link”.'))
         return super(TermForm, self).clean()
 
-    class Meta:
+    class Meta(object):
         model = Term
         widgets = {
             'name': TextInput(attrs={'size': 120}),

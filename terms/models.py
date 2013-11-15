@@ -1,17 +1,34 @@
 # coding: utf-8
 
-from django.db.models import Model, CharField, TextField, URLField
-from django.utils.translation import ugettext_lazy as _
-from .managers import TermManager, CACHE_KEYS
-from HTMLParser import HTMLParser
+from __future__ import unicode_literals
+try:  # Python 3
+    from html.parser import HTMLParser
+except ImportError:  # Python 2
+    from HTMLParser import HTMLParser
+import sys
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.db.models import Model, CharField, TextField, BooleanField
+from django.utils.translation import ugettext_lazy as _
+from .managers import TermManager, CACHE_KEYS
 
 
+def python_2_unicode_compatible(klass):
+    # Taken from django.utils.encoding
+    PY3 = sys.version_info[0] == 3
+    if not PY3:
+        klass.__unicode__ = klass.__str__
+        klass.__str__ = lambda self: self.__unicode__().encode('utf-8')
+    return klass
+
+
+@python_2_unicode_compatible
 class Term(Model):
-    name = CharField(_('name'), max_length=100, unique=True,
-                     help_text=_(u'Variants of the name can be specified with '
-                                 u'a “|” separator (e.g. “Name|name|names”).'))
+    name = CharField(
+        _('name'), max_length=100, unique=True, help_text=_(
+            'Variants of the name can be specified with a “|” separator '
+            '(e.g. “name|names|to name”).'))
+    case_sensitive = BooleanField(_('case sensitive'), default=False)
     definition = TextField(_('definition'), blank=True,
                            help_text=_('Accepts HTML tags.'))
     url = CharField(_('link'), max_length=200, blank=True,
@@ -20,16 +37,16 @@ class Term(Model):
 
     objects = TermManager()
 
-    class Meta:
+    class Meta(object):
         verbose_name = _('term')
         verbose_name_plural = _('terms')
         ordering = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.original_name
 
     def save(self, *args, **kwargs):
-        HTMLParser.unescape.__func__(HTMLParser, self.name)
+        HTMLParser().unescape(self.name)
         cache.delete_many(CACHE_KEYS)
         super(Term, self).save(*args, **kwargs)
 
